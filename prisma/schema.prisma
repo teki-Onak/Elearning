@@ -1,0 +1,334 @@
+// This is your Prisma schema file
+// Learn more: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─────────────────────────────────────────
+// USERS & AUTH
+// ─────────────────────────────────────────
+
+model User {
+  id            String    @id @default(cuid())
+  name          String
+  email         String    @unique
+  password      String
+  role          Role      @default(STUDENT)
+  avatar        String?
+  bio           String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  // Relations
+  enrollments   Enrollment[]
+  progress      Progress[]
+  submissions   QuizSubmission[]
+  surveyResponses SurveyResponse[]
+  notifications Notification[]
+  wellbeingLogs WellbeingLog[]
+  forumPosts    ForumPost[]
+  forumReplies  ForumReply[]
+  achievements  UserAchievement[]
+}
+
+enum Role {
+  STUDENT
+  INSTRUCTOR
+  ADMIN
+}
+
+// ─────────────────────────────────────────
+// COURSES
+// ─────────────────────────────────────────
+
+model Course {
+  id          String    @id @default(cuid())
+  title       String
+  description String
+  thumbnail   String?
+  category    String
+  level       Level     @default(BEGINNER)
+  duration    Int       // in minutes
+  isPublished Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  // Relations
+  modules     Module[]
+  enrollments Enrollment[]
+  tags        CourseTag[]
+}
+
+enum Level {
+  BEGINNER
+  INTERMEDIATE
+  ADVANCED
+}
+
+model Module {
+  id          String    @id @default(cuid())
+  title       String
+  description String?
+  order       Int
+  courseId    String
+  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+
+  lessons     Lesson[]
+}
+
+model Lesson {
+  id          String      @id @default(cuid())
+  title       String
+  content     String      // Rich text / markdown
+  videoUrl    String?
+  duration    Int?        // in minutes
+  order       Int
+  type        LessonType  @default(TEXT)
+  moduleId    String
+  module      Module      @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  createdAt   DateTime    @default(now())
+
+  progress    Progress[]
+  quizzes     Quiz[]
+  resources   Resource[]
+}
+
+enum LessonType {
+  TEXT
+  VIDEO
+  QUIZ
+  ASSIGNMENT
+}
+
+model Resource {
+  id        String   @id @default(cuid())
+  title     String
+  url       String
+  type      String   // pdf, link, doc, etc.
+  lessonId  String
+  lesson    Lesson   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+}
+
+model CourseTag {
+  id       String @id @default(cuid())
+  name     String
+  courseId String
+  course   Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+}
+
+// ─────────────────────────────────────────
+// ENROLLMENT & PROGRESS
+// ─────────────────────────────────────────
+
+model Enrollment {
+  id          String           @id @default(cuid())
+  userId      String
+  courseId    String
+  user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  course      Course           @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  enrolledAt  DateTime         @default(now())
+  completedAt DateTime?
+  status      EnrollmentStatus @default(ACTIVE)
+
+  @@unique([userId, courseId])
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  COMPLETED
+  DROPPED
+}
+
+model Progress {
+  id          String    @id @default(cuid())
+  userId      String
+  lessonId    String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  lesson      Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  completed   Boolean   @default(false)
+  timeSpent   Int       @default(0) // in seconds
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@unique([userId, lessonId])
+}
+
+// ─────────────────────────────────────────
+// QUIZZES
+// ─────────────────────────────────────────
+
+model Quiz {
+  id          String    @id @default(cuid())
+  title       String
+  lessonId    String
+  lesson      Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  passMark    Int       @default(60) // percentage
+  createdAt   DateTime  @default(now())
+
+  questions   Question[]
+  submissions QuizSubmission[]
+}
+
+model Question {
+  id        String   @id @default(cuid())
+  text      String
+  quizId    String
+  quiz      Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  options   Option[]
+  order     Int
+}
+
+model Option {
+  id         String   @id @default(cuid())
+  text       String
+  isCorrect  Boolean  @default(false)
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+}
+
+model QuizSubmission {
+  id        String    @id @default(cuid())
+  userId    String
+  quizId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  quiz      Quiz      @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  score     Int       // percentage 0-100
+  answers   Json      // { questionId: optionId }
+  passed    Boolean
+  createdAt DateTime  @default(now())
+}
+
+// ─────────────────────────────────────────
+// SURVEY (from your research - Chapter 3)
+// ─────────────────────────────────────────
+
+model Survey {
+  id          String           @id @default(cuid())
+  title       String
+  description String?
+  isActive    Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+
+  questions   SurveyQuestion[]
+  responses   SurveyResponse[]
+}
+
+model SurveyQuestion {
+  id        String       @id @default(cuid())
+  text      String
+  type      QuestionType @default(MULTIPLE_CHOICE)
+  options   String[]     // JSON array of options
+  order     Int
+  surveyId  String
+  survey    Survey       @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  category  String?      // "academic_performance", "motivation", "wellbeing", "challenges"
+}
+
+enum QuestionType {
+  MULTIPLE_CHOICE
+  RATING
+  TEXT
+  YES_NO
+}
+
+model SurveyResponse {
+  id        String   @id @default(cuid())
+  userId    String
+  surveyId  String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  survey    Survey   @relation(fields: [surveyId], references: [id], onDelete: Cascade)
+  answers   Json     // { questionId: answer }
+  createdAt DateTime @default(now())
+
+  @@unique([userId, surveyId])
+}
+
+// ─────────────────────────────────────────
+// WELLBEING TRACKER (addresses mental health - Chapter 1 objective 4)
+// ─────────────────────────────────────────
+
+model WellbeingLog {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  mood      Int      // 1-5 scale
+  stress    Int      // 1-5 scale
+  energy    Int      // 1-5 scale
+  note      String?
+  createdAt DateTime @default(now())
+}
+
+// ─────────────────────────────────────────
+// FORUM (addresses limited interaction - Chapter 2.4)
+// ─────────────────────────────────────────
+
+model ForumPost {
+  id        String       @id @default(cuid())
+  title     String
+  content   String
+  userId    String
+  courseId  String?
+  user      User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  replies   ForumReply[]
+}
+
+model ForumReply {
+  id        String    @id @default(cuid())
+  content   String
+  userId    String
+  postId    String
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      ForumPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime  @default(now())
+}
+
+// ─────────────────────────────────────────
+// GAMIFICATION & ACHIEVEMENTS (addresses motivation - Chapter 2.4)
+// ─────────────────────────────────────────
+
+model Achievement {
+  id          String            @id @default(cuid())
+  name        String
+  description String
+  icon        String
+  condition   String            // e.g., "complete_5_lessons"
+  points      Int               @default(10)
+
+  users       UserAchievement[]
+}
+
+model UserAchievement {
+  id            String      @id @default(cuid())
+  userId        String
+  achievementId String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+  earnedAt      DateTime    @default(now())
+
+  @@unique([userId, achievementId])
+}
+
+// ─────────────────────────────────────────
+// NOTIFICATIONS
+// ─────────────────────────────────────────
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      String   // "course", "achievement", "reminder", "survey"
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
