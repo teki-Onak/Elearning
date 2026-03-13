@@ -195,3 +195,5 @@ This platform directly addresses all 5 research objectives from your study:
 3. ✅ **Engagement & motivation** — Achievements, gamification, progress visualization
 4. ✅ **Mental & emotional wellbeing** — Daily wellbeing log + 30-day trend charts
 5. ✅ **Improvements to online learning** — Research surveys collect structured feedback
+
+you will need to config the netework and the file to work well plus add every config file correctly 
