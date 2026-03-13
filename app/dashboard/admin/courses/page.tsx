@@ -1,7 +1,8 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Plus, Pencil, Trash2, Eye, EyeOff, BookOpen, Search, X, Check, UserPlus } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { Plus, Pencil, Trash2, Eye, EyeOff, BookOpen, Search, X, Check, UserPlus, Layers } from 'lucide-react'
 
 interface Course {
   id: string
@@ -38,6 +39,7 @@ export default function AdminCoursesPage() {
   const [instructors, setInstructors] = useState<any[]>([])
   const [selectedInstructor, setSelectedInstructor] = useState('')
   const [assigning, setAssigning] = useState(false)
+  const router = useRouter()
 
   const fetchCourses = async () => {
     setLoading(true)
@@ -211,6 +213,7 @@ export default function AdminCoursesPage() {
                   <td className="px-5 py-4">
                     <div className="flex items-center gap-1">
                       <button onClick={() => { setAssignModal(course.id); fetchInstructors() }} title="Assign Instructor" className="p-1.5 rounded-lg hover:bg-slate-700 text-slate-400 hover:text-white transition-colors">
+                      <button onClick={() => router.push(`/dashboard/admin/courses/${course.id}`)} title="Manage Units" className="p-1.5 rounded-lg hover:bg-slate-700 text-slate-400 hover:text-white transition-colors">  <Layers className="w-4 h-4" /> </button>
                         <UserPlus className="w-4 h-4" />
                       </button>
                       <button onClick={() => togglePublish(course)} title={course.isPublished ? 'Unpublish' : 'Publish'} className="p-1.5 rounded-lg hover:bg-slate-700 text-slate-400 hover:text-white transition-colors">

@@ -45,23 +45,23 @@ export async function POST(req: NextRequest) {
     }
 
     const body = await req.json()
-    const { title, description, type, courseId, dueDate, totalMarks } = body
+    const { title, description, type, courseId, moduleId, dueDate, totalMarks } = body
     if (!title || !courseId || !dueDate) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    const assignment = await prisma.assignment.create({
-      data: {
-        title,
-        description,
-        type,
-        courseId,
-        dueDate: new Date(dueDate),
-        totalMarks: Number(totalMarks),
-        instructorId: session.user.id,
-      },
-    })
-
+const assignment = await prisma.assignment.create({
+  data: {
+    title,
+    description,
+    type,
+    courseId,
+    moduleId: moduleId || null,
+    dueDate: new Date(dueDate),
+    totalMarks: Number(totalMarks),
+    instructorId: session.user.id,
+  },
+})
     const enrollments = await prisma.enrollment.findMany({
       where: { courseId },
       select: { userId: true },

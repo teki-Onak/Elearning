@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils'
 import {
   LayoutDashboard, BookOpen, TrendingUp, Heart, MessageSquare,
   Award, ClipboardList, Users, Settings, Zap, GraduationCap,
-  BarChart3, LogOut, CheckCircle
+  BarChart3, LogOut, CheckCircle, BookMarked
 } from 'lucide-react'
 import { signOut } from 'next-auth/react'
 
@@ -23,6 +23,7 @@ const studentNav = [
 ]
 const instructorNav = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/dashboard/instructor/units', label: 'My Units', icon: BookMarked },
   { href: '/dashboard/instructor/courses', label: 'My Courses', icon: BookOpen },
   { href: '/dashboard/instructor/assignments', label: 'Assignments', icon: ClipboardList },
   { href: '/dashboard/instructor/exams', label: 'Exams', icon: BarChart3 },

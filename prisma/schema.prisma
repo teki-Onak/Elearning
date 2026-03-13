@@ -41,12 +41,16 @@ model User {
   examsGiven           Exam[]                  @relation("ExamsGiven")
   examAttempts         ExamAttempt[]           @relation("ExamAttempts")
   courseInstructors    CourseInstructor[]      @relation("CourseInstructors")
+  unitInstructors      UnitInstructor[]        @relation("UnitInstructors")
+  hodCourses           CourseHoD[]             @relation("HoDCourses")
+  catAttempts          CATAttempt[]            @relation("CATAttempts")
 }
 
 enum Role {
   STUDENT
   INSTRUCTOR
   ADMIN
+  HOD
 }
 
 // ─────────────────────────────────────────
@@ -72,6 +76,7 @@ model Course {
   assignments Assignment[]
   exams       Exam[]
   instructors CourseInstructor[]
+  hods             CourseHoD[]
 }
 
 enum Level {
@@ -81,15 +86,20 @@ enum Level {
 }
 
 model Module {
-  id          String    @id @default(cuid())
-  title       String
-  description String?
-  order       Int
-  courseId    String
-  course      Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
-  createdAt   DateTime  @default(now())
+  id               String    @id @default(cuid())
+  title            String
+  description      String?
+  order            Int
+  courseId         String
+  course           Course    @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  onlineClassLink  String?
+  onlineClassDate  DateTime?
+  createdAt        DateTime  @default(now())
 
-  lessons     Lesson[]
+  lessons          Lesson[]
+  unitInstructors  UnitInstructor[]
+  assignments      Assignment[]
+  cats             CAT[]
 }
 
 model Lesson {
@@ -353,6 +363,8 @@ model Assignment {
   type         AssignmentType       @default(ASSIGNMENT)
   courseId     String
   course       Course               @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  moduleId     String?
+  module       Module?              @relation(fields: [moduleId], references: [id])
   instructorId String
   instructor   User                 @relation("AssignmentsGiven", fields: [instructorId], references: [id])
   dueDate      DateTime
@@ -438,4 +450,80 @@ model CourseInstructor {
   assignedAt   DateTime @default(now())
 
   @@unique([courseId, instructorId])
+}
+// ─────────────────────────────────────────
+// UNIT INSTRUCTOR & HOD
+// ─────────────────────────────────────────
+
+model UnitInstructor {
+  id           String   @id @default(cuid())
+  moduleId     String
+  module       Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  instructorId String
+  instructor   User     @relation("UnitInstructors", fields: [instructorId], references: [id])
+  assignedAt   DateTime @default(now())
+
+  @@unique([moduleId, instructorId])
+}
+
+model CourseHoD {
+  id        String   @id @default(cuid())
+  courseId  String
+  course    Course   @relation(fields: [courseId], references: [id], onDelete: Cascade)
+  hodId     String
+  hod       User     @relation("HoDCourses", fields: [hodId], references: [id])
+  assignedAt DateTime @default(now())
+
+  @@unique([courseId, hodId])
+}
+
+// ─────────────────────────────────────────
+// CAT (Continuous Assessment Test)
+// ─────────────────────────────────────────
+
+model CAT {
+  id           String        @id @default(cuid())
+  title        String
+  description  String?
+  moduleId     String
+  module       Module        @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  courseId     String
+  instructorId String
+  duration     Int           @default(30)
+  totalMarks   Int           @default(30)
+  passMark     Int           @default(50)
+  isPublished  Boolean       @default(false)
+  startTime    DateTime
+  endTime      DateTime?
+  createdAt    DateTime      @default(now())
+
+  questions    CATQuestion[]
+  attempts     CATAttempt[]
+}
+
+model CATQuestion {
+  id      String   @id @default(cuid())
+  catId   String
+  cat     CAT      @relation(fields: [catId], references: [id], onDelete: Cascade)
+  text    String
+  type    String   @default("MCQ")
+  options String[]
+  answer  String
+  marks   Int      @default(1)
+  order   Int      @default(0)
+}
+
+model CATAttempt {
+  id          String    @id @default(cuid())
+  catId       String
+  cat         CAT       @relation(fields: [catId], references: [id], onDelete: Cascade)
+  studentId   String
+  student     User      @relation("CATAttempts", fields: [studentId], references: [id])
+  answers     Json      @default("{}")
+  score       Int?
+  passed      Boolean?
+  startedAt   DateTime  @default(now())
+  submittedAt DateTime?
+
+  @@unique([catId, studentId])
 }

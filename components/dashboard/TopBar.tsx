@@ -15,18 +15,21 @@ export default function TopBar({ user }: TopBarProps) {
   const [loading, setLoading] = useState(false)
   const panelRef = useRef<HTMLDivElement>(null)
 
-  const fetchNotifications = async () => {
-    setLoading(true)
-    try {
-      const res = await fetch('/api/notifications')
-      const data = await res.json()
-      const notifs = Array.isArray(data) ? data : []
-      setNotifications(notifs)
-      setUnreadCount(notifs.filter((n: any) => !n.read).length)
-    } finally {
-      setLoading(false)
-    }
+const fetchNotifications = async () => {
+  setLoading(true)
+  try {
+    const res = await fetch('/api/notifications')
+    if (!res.ok) return
+    const data = await res.json()
+    const notifs = Array.isArray(data) ? data : []
+    setNotifications(notifs)
+    setUnreadCount(notifs.filter((n: any) => !n.read).length)
+  } catch (err) {
+    console.error('Failed to fetch notifications', err)
+  } finally {
+    setLoading(false)
   }
+}
 
   const markAllRead = async () => {
     await fetch('/api/notifications', { method: 'PATCH' })
