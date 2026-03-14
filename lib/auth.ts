@@ -41,12 +41,20 @@ export const authOptions: NextAuthOptions = {
   ],
   callbacks: {
     async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id
-        token.role = (user as any).role
-      }
-      return token
-    },
+          if (user) {
+            token.id = user.id
+            token.role = (user as any).role
+          }
+          // Always refresh role from DB on every request
+          if (token.id) {
+            const dbUser = await prisma.user.findUnique({
+              where: { id: token.id as string },
+              select: { role: true },
+            })
+            if (dbUser) token.role = dbUser.role
+          }
+          return token
+        },
     async session({ session, token }) {
       if (token) {
         session.user.id = token.id as string

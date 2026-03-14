@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { Plus, ArrowLeft, UserPlus, Trash2, X, Check, Loader2, BookOpen, Users, GraduationCap } from 'lucide-react'
+import { Plus, ArrowLeft, UserPlus, Trash2, X, Check, Loader2, BookOpen, Users, GraduationCap, UserMinus } from 'lucide-react'
 
 export default function AdminCourseUnitsPage() {
   const { courseId } = useParams()
@@ -145,17 +145,31 @@ export default function AdminCourseUnitsPage() {
 
       {/* HoD Info */}
       {course?.hods?.length > 0 && (
-        <div className="card border border-primary-500/30 bg-primary-500/5">
-          <div className="flex items-center gap-3">
-            <GraduationCap className="w-5 h-5 text-primary-400" />
-            <div>
-              <p className="text-white text-sm font-medium">Head of Department</p>
-              <p className="text-slate-400 text-xs">{course.hods[0]?.hod?.name} — {course.hods[0]?.hod?.email}</p>
-            </div>
-          </div>
-        </div>
-      )}
-
+              <div className="card border border-primary-500/30 bg-primary-500/5">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <GraduationCap className="w-5 h-5 text-primary-400" />
+                    <div>
+                      <p className="text-white text-sm font-medium">Head of Department</p>
+                      <p className="text-slate-400 text-xs">{course.hods[0]?.hod?.name} — {course.hods[0]?.hod?.email}</p>
+                    </div>
+                  </div>
+                  <button
+                    onClick={async () => {
+                      await fetch(`/api/admin/courses/${courseId}/hod`, {
+                        method: 'DELETE',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ hodId: course.hods[0]?.hod?.id }),
+                      })
+                      fetchData()
+                    }}
+                    className="flex items-center gap-1 text-xs text-red-400 hover:text-red-300 bg-red-900/20 hover:bg-red-900/30 px-3 py-1.5 rounded-lg transition-colors"
+                  >
+                    <UserMinus className="w-3.5 h-3.5" /> Remove HoD
+                  </button>
+                </div>
+              </div>
+            )}
       {loading ? (
         <div className="flex justify-center py-20">
           <Loader2 className="w-8 h-8 animate-spin text-primary-500" />

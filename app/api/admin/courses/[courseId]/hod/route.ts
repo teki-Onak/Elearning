@@ -19,12 +19,7 @@ export async function POST(req: NextRequest, { params }: { params: { courseId: s
     const { hodId } = await req.json()
     if (!hodId) return NextResponse.json({ error: 'Missing hodId' }, { status: 400 })
 
-    // Update user role to HOD
-    await prisma.user.update({
-      where: { id: hodId },
-      data: { role: 'HOD' },
-    })
-
+    
     const hod = await prisma.courseHoD.upsert({
       where: { courseId_hodId: { courseId: params.courseId, hodId } },
       update: {},
@@ -49,5 +44,30 @@ export async function POST(req: NextRequest, { params }: { params: { courseId: s
   } catch (err) {
     console.error('[HOD_ASSIGN]', err)
     return NextResponse.json({ error: 'Failed to assign HoD' }, { status: 500 })
+  }
+}
+export async function DELETE(req: NextRequest, { params }: { params: { courseId: string } }) {
+  try {
+    const session = await getServerSession(authOptions)
+    if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+
+    const dbUser = await prisma.user.findUnique({
+      where: { id: session.user.id },
+      select: { role: true },
+    })
+    if (!dbUser || dbUser.role !== 'ADMIN') {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { hodId } = await req.json()
+
+    await prisma.courseHoD.delete({
+      where: { courseId_hodId: { courseId: params.courseId, hodId } },
+    })
+
+    return NextResponse.json({ success: true })
+  } catch (err) {
+    console.error('[HOD_DELETE]', err)
+    return NextResponse.json({ error: 'Failed to remove HoD' }, { status: 500 })
   }
 }

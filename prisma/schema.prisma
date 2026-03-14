@@ -50,7 +50,6 @@ enum Role {
   STUDENT
   INSTRUCTOR
   ADMIN
-  HOD
 }
 
 // ─────────────────────────────────────────

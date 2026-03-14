@@ -8,20 +8,13 @@ export async function GET(req: NextRequest, { params }: { params: { courseId: st
     const session = await getServerSession(authOptions)
 
     const course = await prisma.course.findUnique({
-      where: { id: params.courseId },
-      include: {
-        modules: {
-          orderBy: { order: 'asc' },
-          include: {
-            lessons: {
-              orderBy: { order: 'asc' },
-              include: { resources: true, quizzes: { select: { id: true, title: true, passMark: true } } },
-            },
-          },
-        },
-        _count: { select: { enrollments: true } },
-      },
-    })
+       where: { id: params.courseId },
+       include: {
+         hods: {
+           include: { hod: { select: { id: true, name: true, email: true } } },
+         },
+       },
+     })
 
     if (!course) {
       return NextResponse.json({ error: 'Course not found.' }, { status: 404 })

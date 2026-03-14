@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, Plus, Trash2, X, Check, Loader2, BookMarked, ClipboardList, Video, Link, Clock, GraduationCap, Eye, EyeOff } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, X, Check, Loader2, BookMarked, ClipboardList, Video, Link, Clock, GraduationCap, Eye, EyeOff, ChevronRight } from 'lucide-react'
 
 type Tab = 'notes' | 'assignments' | 'cats' | 'online'
 
@@ -244,26 +244,31 @@ export default function InstructorUnitPage() {
             </div>
           ) : (
             unit?.cats?.map((cat: any) => (
-              <div key={cat.id} className="card">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <div className="flex items-center gap-2 mb-1">
-                      <h3 className="font-semibold text-white">{cat.title}</h3>
-                      <span className={`badge text-xs ${cat.isPublished ? 'badge-success' : 'bg-slate-700 text-slate-300'}`}>
-                        {cat.isPublished ? 'Published' : 'Draft'}
-                      </span>
-                    </div>
-                    {cat.description && <p className="text-slate-400 text-sm mb-2">{cat.description}</p>}
-                    <div className="flex items-center gap-4 text-xs text-slate-400">
-                      <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{cat.duration} mins</span>
-                      <span>{cat.totalMarks} marks</span>
-                      <span>Pass: {cat.passMark}%</span>
-                      <span>{cat._count?.questions ?? 0} questions</span>
-                      <span>{cat._count?.attempts ?? 0} attempts</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
+          <div key={cat.id} className="card">
+  <div className="flex items-start justify-between">
+    <div className="flex-1">
+      <div className="flex items-center gap-2 mb-1">
+        <h3 className="font-semibold text-white">{cat.title}</h3>
+        <span className={`badge text-xs ${cat.isPublished ? 'badge-success' : 'bg-slate-700 text-slate-300'}`}>
+          {cat.isPublished ? 'Published' : 'Draft'}
+        </span>
+      </div>
+      {cat.description && <p className="text-slate-400 text-sm mb-2">{cat.description}</p>}
+      <div className="flex items-center gap-4 text-xs text-slate-400">
+        <span className="flex items-center gap-1"><Clock className="w-3 h-3" />{cat.duration} mins</span>
+        <span>{cat.totalMarks} marks</span>
+        <span>Pass: {cat.passMark}%</span>
+        <span>{cat._count?.questions ?? 0} questions</span>
+        <span>{cat._count?.attempts ?? 0} attempts</span>
+      </div>
+    </div>
+       <button
+         onClick={() => router.push(`/dashboard/instructor/cats/${cat.id}`)}
+         className="btn-secondary flex items-center gap-2 text-sm ml-4">
+         <ChevronRight className="w-4 h-4" /> Questions
+       </button>
+     </div>
+   </div>
             ))
           )}
         </div>

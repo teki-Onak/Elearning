@@ -13,6 +13,7 @@ import { signOut } from 'next-auth/react'
 const studentNav = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { href: '/dashboard/courses', label: 'My Courses', icon: BookOpen },
+  { href: '/dashboard/units', label: 'Units', icon: BookMarked },
   { href: '/dashboard/assignments', label: 'Assignments', icon: ClipboardList },
   { href: '/dashboard/exams', label: 'Exams', icon: BarChart3 },
   { href: '/dashboard/progress', label: 'Progress', icon: TrendingUp },
@@ -21,14 +22,18 @@ const studentNav = [
   { href: '/dashboard/achievements', label: 'Achievements', icon: Award },
   { href: '/dashboard/surveys', label: 'Surveys', icon: ClipboardList },
 ]
+
 const instructorNav = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/dashboard/hod', label: 'HoD Overview', icon: GraduationCap },
   { href: '/dashboard/instructor/units', label: 'My Units', icon: BookMarked },
   { href: '/dashboard/instructor/courses', label: 'My Courses', icon: BookOpen },
   { href: '/dashboard/instructor/assignments', label: 'Assignments', icon: ClipboardList },
   { href: '/dashboard/instructor/exams', label: 'Exams', icon: BarChart3 },
   { href: '/dashboard/instructor/submissions', label: 'Submissions', icon: CheckCircle },
+  
 ]
+
 
 const adminNav = [
   { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
@@ -36,6 +41,7 @@ const adminNav = [
   { href: '/dashboard/admin/courses', label: 'Courses', icon: GraduationCap },
   { href: '/dashboard/admin/surveys', label: 'Surveys', icon: ClipboardList },
   { href: '/dashboard/admin/analytics', label: 'Analytics', icon: BarChart3 },
+  { href: '/dashboard/admin/results', label: 'Results', icon: Award },
   { href: '/dashboard/wellbeing', label: 'Wellbeing Data', icon: Heart },
 ]
 
@@ -46,7 +52,6 @@ interface SidebarProps {
 export default function Sidebar({ role }: SidebarProps) {
   const pathname = usePathname()
   const nav = role === 'ADMIN' ? adminNav : role === 'INSTRUCTOR' ? instructorNav : studentNav
-
   return (
     <aside className="hidden lg:flex flex-col w-60 bg-surface-900 border-r border-slate-800 h-screen sticky top-0 overflow-y-auto">
       {/* Logo */}
