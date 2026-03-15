@@ -19,6 +19,7 @@ const studentNav = [
   { href: '/dashboard/exams', label: 'Exams', icon: BarChart3 },
   { href: '/dashboard/progress', label: 'Progress', icon: TrendingUp },
   { href: '/dashboard/progress/units', label: 'Unit Progress', icon: BarChart3 },
+  { href: '/dashboard/results', label: 'My Results', icon: Award },
   { href: '/dashboard/wellbeing', label: 'Wellbeing', icon: Heart },
   { href: '/dashboard/forum', label: 'Forum', icon: MessageSquare },
   { href: '/dashboard/achievements', label: 'Achievements', icon: Award },
@@ -79,7 +80,7 @@ export default function Sidebar({ role }: SidebarProps) {
       {/* Navigation */}
       <nav className="flex-1 px-3 py-2 space-y-0.5">
         {nav.map((item) => {
-          const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href))
+        const isActive = pathname === item.href
           return (
             <Link
               key={item.href}

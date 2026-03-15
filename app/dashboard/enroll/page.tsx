@@ -7,16 +7,27 @@ export default function EnrollPage() {
   const [courses, setCourses] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [category, setCategory] = useState('')
+  const [categories, setCategories] = useState<string[]>([])
   const [enrolling, setEnrolling] = useState<string | null>(null)
   const [message, setMessage] = useState<{ type: 'success' | 'error', text: string } | null>(null)
 
-  const fetchCourses = async () => {
+const fetchCourses = async () => {
     setLoading(true)
-    const res = await fetch('/api/student/enroll')
+    const params = new URLSearchParams()
+    if (search) params.set('search', search)
+    if (category) params.set('category', category)
+    const res = await fetch('/api/student/enroll?' + params.toString())
     const data = await res.json()
-    setCourses(Array.isArray(data) ? data : [])
+    const list = Array.isArray(data) ? data : []
+    setCourses(list)
+    // Extract unique categories
+    const cats = [...new Set(list.map((c: any) => c.category).filter(Boolean))] as string[]
+    setCategories(cats)
     setLoading(false)
   }
+
+  useEffect(() => { fetchCourses() }, [search, category])
 
   useEffect(() => { fetchCourses() }, [])
 
@@ -59,13 +70,8 @@ export default function EnrollPage() {
     }
   }
 
-  const filtered = courses.filter(c =>
-    c.title?.toLowerCase().includes(search.toLowerCase()) ||
-    c.description?.toLowerCase().includes(search.toLowerCase())
-  )
-
-  const enrolled = filtered.filter(c => c.enrollments?.length > 0)
-  const available = filtered.filter(c => c.enrollments?.length === 0)
+  const enrolled = courses.filter(c => c.enrollments?.length > 0)
+  const available = courses.filter(c => c.enrollments?.length === 0)
 
   return (
     <div className="space-y-6 max-w-5xl animate-fade-in">
@@ -84,16 +90,43 @@ export default function EnrollPage() {
         </div>
       )}
 
-      {/* Search */}
-      <div className="flex items-center gap-2 bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-2.5 max-w-sm">
-        <Search className="w-4 h-4 text-slate-400" />
-        <input
-          type="text"
-          placeholder="Search courses..."
-          className="bg-transparent text-sm text-white placeholder-slate-400 focus:outline-none flex-1"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
+      {/* Search & Filter */}
+      <div className="flex flex-wrap gap-3">
+        <div className="flex items-center gap-2 bg-slate-800/80 border border-slate-700 rounded-xl px-4 py-2.5 flex-1 max-w-sm">
+          <Search className="w-4 h-4 text-slate-400 flex-shrink-0" />
+          <input
+            type="text"
+            placeholder="Search courses..."
+            className="bg-transparent text-sm text-white placeholder-slate-400 focus:outline-none flex-1"
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+          />
+          {search && (
+            <button onClick={() => setSearch('')} className="text-slate-400 hover:text-white">
+              <X className="w-4 h-4" />
+            </button>
+          )}
+        </div>
+        {categories.length > 0 && (
+          <select
+            className="input text-sm"
+            value={category}
+            onChange={e => setCategory(e.target.value)}
+          >
+            <option value="">All Categories</option>
+            {categories.map(c => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+        )}
+        {(search || category) && (
+          <button
+            onClick={() => { setSearch(''); setCategory('') }}
+            className="text-sm text-slate-400 hover:text-white flex items-center gap-1"
+          >
+            <X className="w-4 h-4" /> Clear filters
+          </button>
+        )}
       </div>
 
       {loading ? (
@@ -193,7 +226,7 @@ export default function EnrollPage() {
             </div>
           )}
 
-          {filtered.length === 0 && (
+          {courses.length === 0 && (
             <div className="card text-center py-20">
               <BookOpen className="w-14 h-14 text-slate-600 mx-auto mb-4" />
               <h2 className="text-white font-semibold text-lg mb-2">No courses found</h2>

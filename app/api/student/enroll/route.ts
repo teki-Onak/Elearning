@@ -8,8 +8,21 @@ export async function GET(req: NextRequest) {
     const session = await getServerSession(authOptions)
     if (!session) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
+    const { searchParams } = new URL(req.url)
+    const search = searchParams.get('search') || ''
+    const category = searchParams.get('category') || ''
+
     const courses = await prisma.course.findMany({
-      where: { isPublished: true },
+      where: {
+        isPublished: true,
+        ...(search ? {
+          OR: [
+            { title: { contains: search, mode: 'insensitive' } },
+            { description: { contains: search, mode: 'insensitive' } },
+          ],
+        } : {}),
+      ...(category ? { category } : {}),
+      },
       include: {
         enrollments: {
           where: { userId: session.user.id },

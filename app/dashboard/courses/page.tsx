@@ -1,43 +1,29 @@
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
-import { redirect } from 'next/navigation'
-import Link from 'next/link'
-import { BookOpen, Clock, CheckCircle, ArrowRight, GraduationCap } from 'lucide-react'
-import { formatDuration } from '@/lib/utils'
+'use client'
 
-export default async function MyCoursesPage() {
-  const session = await getServerSession(authOptions)
-  if (!session) redirect('/login')
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { BookOpen, Clock, CheckCircle, ArrowRight, GraduationCap, Award, Loader2 } from 'lucide-react'
 
-  const enrollments = await prisma.enrollment.findMany({
-    where: { userId: session.user.id },
-    include: {
-      course: {
-        include: {
-          modules: {
-            include: { lessons: { select: { id: true } } },
-          },
-          _count: { select: { enrollments: true } },
-        },
-      },
-    },
-    orderBy: { enrolledAt: 'desc' },
-  })
+export default function MyCoursesPage() {
+  const [enrollments, setEnrollments] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
 
-  const enrollmentsWithProgress = await Promise.all(
-    enrollments.map(async (e) => {
-      const lessonIds = e.course.modules.flatMap((m) => m.lessons.map((l) => l.id))
-      const completed = await prisma.progress.count({
-        where: { userId: session.user.id, lessonId: { in: lessonIds }, completed: true },
-      })
-      return {
-        ...e,
-        totalLessons: lessonIds.length,
-        completedLessons: completed,
-        progress: lessonIds.length > 0 ? Math.round((completed / lessonIds.length) * 100) : 0,
-      }
-    })
+  useEffect(() => {
+    const load = async () => {
+      setLoading(true)
+      const res = await fetch('/api/student/courses')
+      const data = await res.json()
+      setEnrollments(Array.isArray(data) ? data : [])
+      setLoading(false)
+    }
+    load()
+  }, [])
+
+  if (loading) return (
+    <div className="flex justify-center py-20">
+      <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
+    </div>
   )
 
   return (
@@ -47,28 +33,24 @@ export default async function MyCoursesPage() {
           <h1 className="font-display text-3xl font-bold text-white">My Courses</h1>
           <p className="text-slate-400 mt-1">Track your enrolled courses and progress</p>
         </div>
-        <Link href="/courses" className="btn-primary flex items-center gap-2">
+        <button onClick={() => router.push('/dashboard/enroll')} className="btn-primary flex items-center gap-2">
           <BookOpen className="w-4 h-4" /> Browse More
-        </Link>
+        </button>
       </div>
 
-      {enrollmentsWithProgress.length === 0 ? (
+      {enrollments.length === 0 ? (
         <div className="card text-center py-20">
           <GraduationCap className="w-14 h-14 text-slate-600 mx-auto mb-4" />
           <h2 className="text-white font-semibold text-lg mb-2">No courses yet</h2>
-          <p className="text-slate-400 text-sm mb-6">You haven't enrolled in any courses. Start learning today!</p>
-          <Link href="/courses" className="btn-primary inline-flex items-center gap-2">
+          <p className="text-slate-400 text-sm mb-6">You haven't enrolled in any courses yet!</p>
+          <button onClick={() => router.push('/dashboard/enroll')} className="btn-primary inline-flex items-center gap-2">
             <BookOpen className="w-4 h-4" /> Browse Courses
-          </Link>
+          </button>
         </div>
       ) : (
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {enrollmentsWithProgress.map((e) => (
-            <Link
-              key={e.id}
-              href={`/courses/${e.courseId}`}
-              className="card-hover group flex flex-col"
-            >
+          {enrollments.map((e) => (
+            <div key={e.id} className="card flex flex-col group">
               {/* Thumbnail */}
               <div className="h-32 bg-gradient-to-br from-primary-900/60 to-accent-900/40 rounded-xl mb-4 flex items-center justify-center border border-slate-700/30 relative">
                 <BookOpen className="w-9 h-9 text-primary-400/60" />
@@ -80,19 +62,21 @@ export default async function MyCoursesPage() {
               </div>
 
               <div className="flex items-center gap-2 mb-2">
-                <span className="text-xs text-slate-500 bg-slate-800 px-2 py-0.5 rounded-full">
-                  {e.course.category}
-                </span>
-                <span className={`badge text-xs ${
+                {e.course?.category && (
+                  <span className="text-xs text-slate-500 bg-slate-800 px-2 py-0.5 rounded-full">
+                    {e.course.category}
+                  </span>
+                )}
+                <span className={'badge text-xs ' + (
                   e.progress === 100 ? 'badge-success' :
                   e.progress > 0 ? 'badge-warning' : 'badge-primary'
-                }`}>
+                )}>
                   {e.progress === 100 ? 'Completed' : e.progress > 0 ? 'In Progress' : 'Not Started'}
                 </span>
               </div>
 
               <h3 className="font-display font-semibold text-white group-hover:text-primary-300 transition-colors mb-3 leading-snug flex-1">
-                {e.course.title}
+                {e.course?.title}
               </h3>
 
               {/* Progress Bar */}
@@ -102,21 +86,26 @@ export default async function MyCoursesPage() {
                   <span>{e.progress}%</span>
                 </div>
                 <div className="progress-bar">
-                  <div className="progress-fill" style={{ width: `${e.progress}%` }} />
+                  <div className="progress-fill" style={{ width: e.progress + '%' }} />
                 </div>
               </div>
 
-              <div className="flex items-center gap-4 mt-4 pt-4 border-t border-slate-700/50 text-xs text-slate-400">
-                <span className="flex items-center gap-1.5">
-                  <Clock className="w-3.5 h-3.5" />
-                  {formatDuration(e.course.duration)}
-                </span>
-                <span className="ml-auto flex items-center gap-1 text-primary-400 group-hover:gap-2 transition-all">
+              <div className="flex items-center gap-2 mt-4 pt-4 border-t border-slate-700/50">
+                <button
+                  onClick={() => router.push('/dashboard/units')}
+                  className="flex-1 flex items-center justify-center gap-1 text-xs text-primary-400 hover:text-primary-300 transition-colors"
+                >
                   {e.progress === 100 ? 'Review' : e.progress > 0 ? 'Continue' : 'Start'}
                   <ArrowRight className="w-3.5 h-3.5" />
-                </span>
+                </button>
+                <button
+                  onClick={() => router.push('/dashboard/certificate?courseId=' + e.courseId)}
+                  className="flex items-center gap-1 text-xs text-amber-400 hover:text-amber-300 transition-colors"
+                >
+                  <Award className="w-3.5 h-3.5" /> Certificate
+                </button>
               </div>
-            </Link>
+            </div>
           ))}
         </div>
       )}
