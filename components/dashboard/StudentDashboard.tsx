@@ -1,5 +1,6 @@
 'use client'
 
+import UpcomingCountdown from './UpcomingCountdown'
 import Link from 'next/link'
 import { BookOpen, TrendingUp, Award, Heart, ArrowRight, Clock, CheckCircle, Smile } from 'lucide-react'
 import { formatDate, calcProgress, getMoodLabel, getMoodColor } from '@/lib/utils'
@@ -48,6 +49,8 @@ export default function StudentDashboard({ user, enrollments, notifications, wel
         ))}
       </div>
 
+     {/* Upcoming Deadlines */}
+      <UpcomingCountdown />
       <div className="grid lg:grid-cols-3 gap-6">
         {/* Active Courses */}
         <div className="lg:col-span-2 card">

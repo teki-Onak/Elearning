@@ -16,6 +16,10 @@ export default async function DashboardLayout({ children }: { children: React.Re
         <main className="flex-1 p-6 overflow-auto">
           {children}
         </main>
+        <footer className="px-6 py-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-500">
+          <span>© {new Date().getFullYear()} EduFlow Learning Platform</span>
+          <span>Designed & Built by <span className="text-primary-400 font-medium">Obinna Kelvin</span></span>
+        </footer>
       </div>
     </div>
   )
