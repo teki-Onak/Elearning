@@ -30,11 +30,13 @@ if (error) {
   )
 }
 
-  const statCards = [
+const statCards = [
     { label: 'Total Users', value: stats.totalUsers, icon: Users, color: 'text-primary-400', bg: 'bg-primary-500/10' },
     { label: 'Students', value: stats.totalStudents, icon: BookOpen, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
     { label: 'Enrollments', value: stats.totalEnrollments, icon: TrendingUp, color: 'text-amber-400', bg: 'bg-amber-500/10' },
-    { label: 'Survey Responses', value: stats.totalSurveyResponses, icon: ClipboardList, color: 'text-accent-400', bg: 'bg-accent-500/10' },
+    { label: 'Courses', value: stats.totalCourses ?? 0, icon: BarChart3, color: 'text-accent-400', bg: 'bg-accent-500/10' },
+    { label: 'Instructors', value: stats.totalInstructors ?? 0, icon: ClipboardList, color: 'text-pink-400', bg: 'bg-pink-500/10' },
+    { label: 'Survey Responses', value: stats.totalSurveyResponses, icon: Heart, color: 'text-rose-400', bg: 'bg-rose-500/10' },
   ]
 
   return (
@@ -45,7 +47,7 @@ if (error) {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         {statCards.map((s) => (
           <div key={s.label} className="stat-card">
             <div className={`w-9 h-9 rounded-xl ${s.bg} flex items-center justify-center`}>
@@ -113,7 +115,23 @@ if (error) {
           )}
         </div>
       </div>
-
+       {/* Quick Actions */}
+      <div>
+        <h2 className="text-white font-semibold mb-3">Quick Actions</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { label: 'Manage Users', href: '/dashboard/admin/users', color: 'bg-primary-500/10 hover:bg-primary-500/20 text-primary-400', icon: Users },
+            { label: 'Manage Courses', href: '/dashboard/admin/courses', color: 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400', icon: BookOpen },
+            { label: 'View Results', href: '/dashboard/admin/results', color: 'bg-amber-500/10 hover:bg-amber-500/20 text-amber-400', icon: BarChart3 },
+            { label: 'Analytics', href: '/dashboard/admin/analytics', color: 'bg-accent-500/10 hover:bg-accent-500/20 text-accent-400', icon: TrendingUp },
+          ].map(a => (
+            <a key={a.label} href={a.href} className={'card flex items-center gap-3 py-4 px-4 transition-all cursor-pointer ' + a.color}>
+              <a.icon className="w-5 h-5 flex-shrink-0" />
+              <span className="text-sm font-medium">{a.label}</span>
+            </a>
+          ))}
+        </div>
+      </div>
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Recent Users */}
         <div className="card">

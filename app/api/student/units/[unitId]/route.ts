@@ -12,7 +12,15 @@ export async function GET(req: NextRequest, { params }: { params: { unitId: stri
       where: { id: params.unitId },
       include: {
         course: { select: { id: true, title: true } },
-        lessons: { orderBy: { order: 'asc' } },
+        lessons: {
+          orderBy: { order: 'asc' },
+          include: {
+            progress: {
+              where: { userId: session.user.id },
+              select: { completed: true },
+            },
+          },
+        },
         unitInstructors: {
           include: { instructor: { select: { name: true, email: true } } },
         },

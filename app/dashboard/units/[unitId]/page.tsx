@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, BookMarked, ClipboardList, GraduationCap, Video, Loader2, ExternalLink, Clock, CheckCircle, XCircle, Play } from 'lucide-react'
+import { ArrowLeft, BookMarked, ClipboardList, GraduationCap, Video, Loader2, ExternalLink, Clock, CheckCircle, XCircle, Play, BookCheck } from 'lucide-react'
 
 type Tab = 'notes' | 'assignments' | 'cats' | 'online'
 
@@ -135,20 +135,42 @@ export default function StudentUnitPage() {
               <BookMarked className="w-12 h-12 text-slate-600 mx-auto mb-3" />
               <p className="text-slate-400">No notes available yet.</p>
             </div>
-          ) : unit.lessons.map((lesson: any, i: number) => (
-            <div key={lesson.id} className="card">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="w-6 h-6 rounded-lg bg-primary-500/20 text-primary-400 text-xs font-bold flex items-center justify-center">{i + 1}</span>
-                <h3 className="font-semibold text-white">{lesson.title}</h3>
+           ) : unit.lessons.map((lesson: any, i: number) => {
+            const isRead = lesson.progress?.[0]?.completed ?? false
+            return (
+              <div key={lesson.id} className={'card border ' + (isRead ? 'border-emerald-800/30 bg-emerald-900/5' : 'border-slate-700/50')}>
+                <div className="flex items-start justify-between gap-3">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-3">
+                      <span className={'w-6 h-6 rounded-lg text-xs font-bold flex items-center justify-center ' + (isRead ? 'bg-emerald-500/20 text-emerald-400' : 'bg-primary-500/20 text-primary-400')}>{i + 1}</span>
+                      <h3 className="font-semibold text-white">{lesson.title}</h3>
+                      {isRead && <span className="badge badge-success text-xs">Read</span>}
+                    </div>
+                    <p className="text-slate-300 text-sm leading-relaxed ml-8 whitespace-pre-wrap">{lesson.content}</p>
+                    {lesson.videoUrl && (
+                      <a href={lesson.videoUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 mt-3 ml-8 text-primary-400 hover:text-primary-300 text-sm">
+                        <Video className="w-4 h-4" /> Watch Video <ExternalLink className="w-3 h-3" />
+                      </a>
+                    )}
+                  </div>
+                  <button
+                    onClick={async () => {
+                      await fetch('/api/student/progress/lesson', {
+                        method: isRead ? 'DELETE' : 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ lessonId: lesson.id }),
+                      })
+                      fetchUnit()
+                    }}
+                    className={'flex items-center gap-1 text-xs px-3 py-1.5 rounded-lg transition-colors flex-shrink-0 ' + (isRead ? 'bg-emerald-900/20 text-emerald-400 hover:bg-emerald-900/30' : 'bg-slate-800 text-slate-400 hover:text-white')}
+                  >
+                    <BookCheck className="w-3.5 h-3.5" />
+                    {isRead ? 'Mark Unread' : 'Mark Read'}
+                  </button>
+                </div>
               </div>
-              <p className="text-slate-300 text-sm leading-relaxed ml-8 whitespace-pre-wrap">{lesson.content}</p>
-              {lesson.videoUrl && (
-                <a href={lesson.videoUrl} target="_blank" rel="noreferrer" className="flex items-center gap-2 mt-3 ml-8 text-primary-400 hover:text-primary-300 text-sm">
-                  <Video className="w-4 h-4" /> Watch Video <ExternalLink className="w-3 h-3" />
-                </a>
-              )}
-            </div>
-          ))}
+            )
+          })}
         </div>
       )}
 

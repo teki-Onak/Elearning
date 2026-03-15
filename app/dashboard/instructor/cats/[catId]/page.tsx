@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, Plus, Trash2, X, Check, Loader2, GraduationCap, Eye, EyeOff } from 'lucide-react'
+import { ArrowLeft, Plus, Trash2, X, Check, Loader2, GraduationCap, Eye, EyeOff, BarChart2 } from 'lucide-react'
 
 type QuestionType = 'MCQ' | 'TRUE_FALSE' | 'SHORT_ANSWER'
 
@@ -109,6 +109,12 @@ export default function CATQuestionsPage() {
           </div>
         </div>
         <div className="flex items-center gap-2">
+      <button
+            onClick={() => router.push('/dashboard/instructor/cats/' + catId + '/results')}
+            className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium bg-slate-800 text-slate-300 hover:text-white transition-all"
+          >
+            <BarChart2 className="w-4 h-4" /> Results
+          </button>
           <button
             onClick={handlePublish}
             disabled={publishing}
