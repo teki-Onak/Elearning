@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { checkAndAwardAchievements } from '@/lib/achievements'
 
 export async function GET(req: NextRequest) {
   try {
@@ -53,7 +54,7 @@ export async function POST(req: NextRequest) {
     const response = await prisma.surveyResponse.create({
       data: { userId: session.user.id, surveyId, answers },
     })
-
+    await checkAndAwardAchievements(session.user.id)
     return NextResponse.json(response, { status: 201 })
   } catch (err) {
     console.error('[SURVEYS_POST]', err)

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { checkAndAwardAchievements } from '@/lib/achievements'
 
 export async function POST(req: NextRequest, { params }: { params: { catId: string } }) {
   try {
@@ -45,6 +46,7 @@ export async function POST(req: NextRequest, { params }: { params: { catId: stri
       },
     })
 
+    await checkAndAwardAchievements(session.user.id)
     return NextResponse.json({ attempt, score, passed, percentage: Math.round(percentage) })
   } catch (err) {
     console.error('[CAT_SUBMIT]', err)

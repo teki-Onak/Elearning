@@ -1,3 +1,4 @@
+import { checkAndAwardAchievements } from '@/lib/achievements'
 import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
@@ -16,8 +17,9 @@ export async function POST(req: NextRequest) {
       update: { completed: true, completedAt: new Date() },
       create: { userId: session.user.id, lessonId, completed: true, completedAt: new Date() },
     })
-
+    await checkAndAwardAchievements(session.user.id)
     return NextResponse.json(progress)
+
   } catch (err) {
     console.error('[LESSON_PROGRESS]', err)
     return NextResponse.json({ error: 'Failed to update progress' }, { status: 500 })

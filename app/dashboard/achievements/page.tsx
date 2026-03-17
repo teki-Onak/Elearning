@@ -1,24 +1,30 @@
-import { getServerSession } from 'next-auth'
-import { authOptions } from '@/lib/auth'
-import { prisma } from '@/lib/prisma'
-import { redirect } from 'next/navigation'
-import { Award, Lock } from 'lucide-react'
-import { formatDate } from '@/lib/utils'
+'use client'
 
-export default async function AchievementsPage() {
-  const session = await getServerSession(authOptions)
-  if (!session) redirect('/login')
+import { useEffect, useState } from 'react'
+import { Award, Lock, Loader2 } from 'lucide-react'
 
-  const [allAchievements, userAchievements] = await Promise.all([
-    prisma.achievement.findMany({ orderBy: { points: 'desc' } }),
-    prisma.userAchievement.findMany({
-      where: { userId: session.user.id },
-      include: { achievement: true },
-    }),
-  ])
+export default function AchievementsPage() {
+  const [data, setData] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
 
-  const earnedIds = new Set(userAchievements.map(ua => ua.achievementId))
-  const totalPoints = userAchievements.reduce((a, ua) => a + ua.achievement.points, 0)
+  useEffect(() => {
+    const load = async () => {
+      const res = await fetch('/api/student/achievements')
+      const d = await res.json()
+      setData(d)
+      setLoading(false)
+    }
+    load()
+  }, [])
+
+  if (loading) return (
+    <div className="flex justify-center py-20">
+      <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
+    </div>
+  )
+
+  const { allAchievements = [], userAchievements = [], totalPoints = 0 } = data ?? {}
+  const earnedIds = new Set(userAchievements.map((ua: any) => ua.achievementId))
 
   return (
     <div className="space-y-8 max-w-4xl animate-fade-in">
@@ -47,40 +53,45 @@ export default async function AchievementsPage() {
       {/* Earned */}
       {userAchievements.length > 0 && (
         <div>
-          <h2 className="section-title mb-4">Earned Achievements</h2>
-          <div className="grid md:grid-cols-2 gap-3">
-            {userAchievements.map((ua) => (
-              <div key={ua.id} className="card flex items-center gap-4 border-amber-500/20 bg-amber-900/10">
-                <div className="text-3xl">{ua.achievement.icon}</div>
-                <div className="flex-1">
-                  <p className="font-semibold text-white">{ua.achievement.name}</p>
-                  <p className="text-sm text-slate-400">{ua.achievement.description}</p>
-                  <p className="text-xs text-slate-500 mt-1">Earned {formatDate(ua.earnedAt)}</p>
+          <h2 className="text-white font-semibold text-lg mb-4">Earned Achievements</h2>
+          <div className="grid sm:grid-cols-2 gap-4">
+            {userAchievements.map((ua: any) => (
+              <div key={ua.id} className="card border border-amber-500/20 bg-amber-900/10 flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-amber-500/20 flex items-center justify-center text-2xl flex-shrink-0">
+                  {ua.achievement.icon}
                 </div>
-                <span className="badge-warning">{ua.achievement.points}pts</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-white font-semibold">{ua.achievement.name}</p>
+                  <p className="text-slate-400 text-sm">{ua.achievement.description}</p>
+                  <p className="text-amber-400 text-xs mt-1">+{ua.achievement.points} points</p>
+                </div>
               </div>
             ))}
           </div>
         </div>
       )}
 
-      {/* Locked */}
+      {/* All Achievements */}
       <div>
-        <h2 className="section-title mb-4">All Achievements</h2>
-        <div className="grid md:grid-cols-2 gap-3">
-          {allAchievements.filter(a => !earnedIds.has(a.id)).map((a) => (
-            <div key={a.id} className="card flex items-center gap-4 opacity-50">
-              <div className="text-3xl grayscale">{a.icon}</div>
-              <div className="flex-1">
-                <p className="font-semibold text-white">{a.name}</p>
-                <p className="text-sm text-slate-400">{a.description}</p>
+        <h2 className="text-white font-semibold text-lg mb-4">All Achievements</h2>
+        <div className="grid sm:grid-cols-2 gap-4">
+          {allAchievements.map((a: any) => {
+            const earned = earnedIds.has(a.id)
+            return (
+              <div key={a.id} className={'card flex items-center gap-4 ' + (earned ? 'border-amber-500/20' : 'opacity-50')}>
+                <div className={'w-12 h-12 rounded-2xl flex items-center justify-center text-2xl flex-shrink-0 ' + (earned ? 'bg-amber-500/20' : 'bg-slate-800')}>
+                  {earned ? a.icon : <Lock className="w-5 h-5 text-slate-500" />}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className={'font-semibold ' + (earned ? 'text-white' : 'text-slate-400')}>{a.name}</p>
+                  <p className="text-slate-400 text-sm">{a.description}</p>
+                  <p className={'text-xs mt-1 ' + (earned ? 'text-amber-400' : 'text-slate-500')}>
+                    {earned ? '✓ Earned · ' : ''}{a.points} points
+                  </p>
+                </div>
               </div>
-              <div className="flex flex-col items-end gap-1">
-                <Lock className="w-4 h-4 text-slate-500" />
-                <span className="text-xs text-slate-500">{a.points}pts</span>
-              </div>
-            </div>
-          ))}
+            )
+          })}
         </div>
       </div>
     </div>

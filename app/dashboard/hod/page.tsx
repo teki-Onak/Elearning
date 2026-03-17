@@ -24,8 +24,8 @@ export default function HoDDashboard() {
 
   useEffect(() => { load() }, [])
 
-  const fetchInstructors = async () => {
-    const res = await fetch('/api/admin/users?role=INSTRUCTOR&limit=100')
+const fetchInstructors = async () => {
+    const res = await fetch('/api/hod/instructors')
     const data = await res.json()
     setInstructors(Array.isArray(data.users) ? data.users : [])
   }

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getServerSession } from 'next-auth'
 import { authOptions } from '@/lib/auth'
 import { prisma } from '@/lib/prisma'
+import { checkAndAwardAchievements } from '@/lib/achievements'
 
 export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -51,6 +52,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json({ score, correct, passed, total: exam.questions.length })
   } catch (err) {
     console.error('[EXAM_SUBMIT]', err)
+    await checkAndAwardAchievements(session.user.id)
     return NextResponse.json({ error: 'Failed to submit exam' }, { status: 500 })
   }
 }
