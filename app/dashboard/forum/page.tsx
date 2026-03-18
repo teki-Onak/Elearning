@@ -13,12 +13,14 @@ export default function ForumPage() {
   const [form, setForm] = useState({ title: '', content: '' })
   const [activePost, setActivePost] = useState<any>(null)
   const [replyContent, setReplyContent] = useState('')
+ const fetchPosts = async () => {
+    const res = await fetch('/api/forum')
+    const data = await res.json()
+    setPosts(Array.isArray(data) ? data : [])
+  }
 
   useEffect(() => {
-    fetch('/api/forum')
-      .then(r => r.json())
-      .then(data => { setPosts(Array.isArray(data) ? data : []); setLoading(false) })
-      .catch(() => setLoading(false))
+    fetchPosts().finally(() => setLoading(false))
   }, [])
 
   const handleCreatePost = async (e: React.FormEvent) => {
@@ -31,12 +33,18 @@ export default function ForumPage() {
       body: JSON.stringify(form),
     })
     const json = await res.json()
-    if (res.ok) {
-      toast.success('Post created!')
-      setPosts(prev => [json, ...prev])
-      setForm({ title: '', content: '' })
-      setShowForm(false)
-    } else {
+                    if (res.ok) {
+                          toast.success('Reply posted!')
+                          setReplyContent('')
+                          await fetchPosts()
+                          // Update activePost with fresh data
+                          const updated = await fetch('/api/forum')
+                          const data = await updated.json()
+                          const fresh = Array.isArray(data) ? data : []
+                          setPosts(fresh)
+                          const refreshed = fresh.find((p: any) => p.id === post.id)
+                          if (refreshed) setActivePost(refreshed)
+                        } else {
       toast.error(json.error || 'Failed to create post')
     }
     setSubmitting(false)
