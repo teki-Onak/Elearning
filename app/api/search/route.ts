@@ -16,15 +16,21 @@ export async function GET(req: NextRequest) {
     const isInstructor = session.user.role === 'INSTRUCTOR'
     const isAdmin = session.user.role === 'ADMIN'
 
+    // Get assigned unit IDs for instructor
+    let assignedCourseIds: string[] = []
+    if (isInstructor) {
+      const assignments = await prisma.unitInstructor.findMany({
+        where: { instructorId: session.user.id },
+        include: { module: { select: { courseId: true } } },
+      })
+      assignedCourseIds = [...new Set(assignments.map(a => a.module.courseId))]
+    }
+
     const [courses, forums] = await Promise.all([
       prisma.course.findMany({
         where: {
           isPublished: true,
-          ...(isInstructor ? {
-            instructors: {
-              some: { instructorId: session.user.id }
-            }
-          } : {}),
+          ...(isInstructor ? { id: { in: assignedCourseIds } } : {}),
           OR: [
             { title: { contains: q, mode: 'insensitive' } },
             { description: { contains: q, mode: 'insensitive' } },
@@ -48,7 +54,7 @@ export async function GET(req: NextRequest) {
 
     // Admin can also search users
     let users: any[] = []
-    if (session.user.role === 'ADMIN') {
+    if (isAdmin) {
       users = await prisma.user.findMany({
         where: {
           OR: [
