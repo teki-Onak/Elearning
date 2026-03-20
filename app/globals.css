@@ -166,42 +166,65 @@
 }
 
 /* Light mode overrides */
-.light {
-  --color-surface-950: #f8fafc;
-  --color-surface-900: #f1f5f9;
+html.light {
+  color-scheme: light;
 }
 
 .light body {
-  background-color: #f1f5f9;
-  color: #0f172a;
-}
-
-.light .card,
-.light .card-hover {
-  background-color: #ffffff;
-  border-color: #e2e8f0;
-  color: #0f172a;
-}
-
-.light header {
-  background-color: #ffffff;
-  border-color: #e2e8f0;
+  background-color: #f1f5f9 !important;
+  color: #0f172a !important;
 }
 
 .light aside {
-  background-color: #ffffff;
-  border-color: #e2e8f0;
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
 }
 
-.light .text-slate-400 { color: #64748b; }
-.light .text-slate-300 { color: #475569; }
-.light .text-white { color: #0f172a; }
-.light .bg-slate-800 { background-color: #f1f5f9; }
-.light .bg-slate-800\/50 { background-color: rgba(241,245,249,0.8); }
-.light .border-slate-700 { border-color: #cbd5e1; }
-.light .border-slate-800 { border-color: #e2e8f0; }
+.light aside a, .light aside span, .light aside p {
+  color: #475569 !important;
+}
+
+.light aside a.active, .light aside .bg-slate-800 {
+  background-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+.light header {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+}
+
+.light .card, .light .card-hover {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #0f172a !important;
+}
+
+.light .text-white { color: #0f172a !important; }
+.light .text-slate-400 { color: #64748b !important; }
+.light .text-slate-300 { color: #475569 !important; }
+.light .text-slate-500 { color: #94a3b8 !important; }
+.light .bg-slate-800, .light .bg-slate-900 { background-color: #f1f5f9 !important; }
+.light .bg-slate-800\/50 { background-color: rgba(241,245,249,0.9) !important; }
+.light .bg-slate-800\/80 { background-color: rgba(241,245,249,0.95) !important; }
+.light .bg-surface-950 { background-color: #f1f5f9 !important; }
+.light .bg-surface-900 { background-color: #ffffff !important; }
+.light .border-slate-700 { border-color: #cbd5e1 !important; }
+.light .border-slate-800 { border-color: #e2e8f0 !important; }
+
 .light input, .light textarea, .light select {
-  background-color: #f8fafc;
-  border-color: #cbd5e1;
-  color: #0f172a;
+  background-color: #f8fafc !important;
+  border-color: #cbd5e1 !important;
+  color: #0f172a !important;
+}
+
+.light .badge { 
+  background-color: #e2e8f0 !important; 
+  color: #475569 !important; 
+}
+
+.light footer {
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
+  color: #64748b !important;
 }
