@@ -25,6 +25,7 @@ const studentNav = [
   { href: '/dashboard/forum', label: 'Forum', icon: MessageSquare },
   { href: '/dashboard/achievements', label: 'Achievements', icon: Award },
   { href: '/dashboard/surveys', label: 'Surveys', icon: ClipboardList },
+  { href: '/dashboard/chat', label: 'Chat', icon: MessageCircle },
 ]
 
 const instructorNav = [
@@ -36,6 +37,7 @@ const instructorNav = [
   { href: '/dashboard/instructor/exams', label: 'Exams', icon: BarChart3 },
   { href: '/dashboard/instructor/submissions', label: 'Submissions', icon: CheckCircle },
   { href: '/dashboard/instructor/announcements', label: 'Announcements', icon: Megaphone },
+  { href: '/dashboard/chat', label: 'Chat', icon: MessageCircle },
   
 ]
 
@@ -49,6 +51,7 @@ const adminNav = [
   { href: '/dashboard/admin/results', label: 'Results', icon: Award },
   { href: '/dashboard/admin/announcements', label: 'Announcements', icon: Megaphone },
   { href: '/dashboard/wellbeing', label: 'Wellbeing Data', icon: Heart },
+  { href: '/dashboard/chat', label: 'Chat', icon: MessageCircle },
 ]
 
 interface SidebarProps {

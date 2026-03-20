@@ -44,6 +44,8 @@ model User {
   unitInstructors      UnitInstructor[]        @relation("UnitInstructors")
   hodCourses           CourseHoD[]             @relation("HoDCourses")
   catAttempts          CATAttempt[]            @relation("CATAttempts")
+  chatMembers  ChatMember[]
+  chatMessages ChatMessage[]
 }
 
 enum Role {
@@ -525,4 +527,43 @@ model CATAttempt {
   submittedAt DateTime?
 
   @@unique([catId, studentId])
+}
+
+// ─────────────────────────────────────────
+// CHAT
+// ─────────────────────────────────────────
+
+model ChatRoom {
+  id        String    @id @default(cuid())
+  name      String?
+  type      String    @default("direct") // direct, group
+  courseId  String?
+  createdAt DateTime  @default(now())
+
+  messages  ChatMessage[]
+  members   ChatMember[]
+}
+
+model ChatMember {
+  id        String   @id @default(cuid())
+  roomId    String
+  userId    String
+  room      ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  joinedAt  DateTime @default(now())
+
+  @@unique([roomId, userId])
+}
+
+model ChatMessage {
+  id        String   @id @default(cuid())
+  roomId    String
+  userId    String
+  content   String
+  room      ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@index([roomId])
+  @@index([userId])
 }
