@@ -42,7 +42,7 @@ export default function ForumPage() {
                           const data = await updated.json()
                           const fresh = Array.isArray(data) ? data : []
                           setPosts(fresh)
-                          const refreshed = fresh.find((p: any) => p.id === post.id)
+                          const refreshed = fresh.find((p: any) => p.id === activePost?.id)
                           if (refreshed) setActivePost(refreshed)
                         } else {
       toast.error(json.error || 'Failed to create post')
