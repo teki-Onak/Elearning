@@ -26,7 +26,7 @@ export default async function CoursesPage() {
     enrolledIds = new Set(enrollments.map(e => e.courseId))
   }
 
-  const categories = [...new Set(courses.map(c => c.category))]
+  const categories = Array.from(new Set(courses.map(c => c.category)))
 
   const levelColors: Record<string, string> = {
     BEGINNER: 'badge-success',
