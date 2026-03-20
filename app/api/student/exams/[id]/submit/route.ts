@@ -52,7 +52,6 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     return NextResponse.json({ score, correct, passed, total: exam.questions.length })
   } catch (err) {
     console.error('[EXAM_SUBMIT]', err)
-    await checkAndAwardAchievements(session.user.id)
     return NextResponse.json({ error: 'Failed to submit exam' }, { status: 500 })
   }
 }
