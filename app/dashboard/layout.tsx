@@ -1,6 +1,7 @@
 import { getServerSession } from 'next-auth'
 import { redirect } from 'next/navigation'
 import { authOptions } from '@/lib/auth'
+import { prisma } from '@/lib/prisma'
 import Sidebar from '@/components/dashboard/Sidebar'
 import TopBar from '@/components/dashboard/TopBar'
 
@@ -8,11 +9,18 @@ export default async function DashboardLayout({ children }: { children: React.Re
   const session = await getServerSession(authOptions)
   if (!session) redirect('/login')
 
+  const user = await prisma.user.findUnique({
+    where: { id: session.user.id },
+    select: { id: true, name: true, email: true, role: true, avatar: true },
+  })
+
+  if (!user) redirect('/login')
+
   return (
     <div className="flex min-h-screen bg-surface-950">
       <Sidebar role={session.user.role} />
       <div className="flex-1 flex flex-col min-w-0">
-        <TopBar user={session.user} />
+        <TopBar user={user} />
         <main className="flex-1 p-6 overflow-auto">
           {children}
         </main>

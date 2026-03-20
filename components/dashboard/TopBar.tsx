@@ -5,7 +5,7 @@ import { Bell, Search, Menu, CheckCheck, X } from 'lucide-react'
 import { getInitials } from '@/lib/utils'
 
 interface TopBarProps {
-  user: { name: string; email: string; role: string }
+  user: { name: string; email: string; role: string; avatar?: string | null }
 }
 
 export default function TopBar({ user }: TopBarProps) {
@@ -185,8 +185,12 @@ const fetchNotifications = async () => {
 
       {/* User avatar */}
       <div className="flex items-center gap-3 pl-2 border-l border-slate-700">
-        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-xs font-bold text-white">
-          {getInitials(user.name)}
+        <div className="w-8 h-8 rounded-full overflow-hidden bg-gradient-to-br from-primary-500 to-accent-500 flex items-center justify-center text-xs font-bold text-white">
+          {user.avatar ? (
+            <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+          ) : (
+            getInitials(user.name)
+          )}
         </div>
         <div className="hidden md:block">
           <p className="text-sm font-medium text-white leading-none">{user.name}</p>
