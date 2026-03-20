@@ -62,7 +62,8 @@ export async function GET(req: NextRequest) {
       : 100
 
     const overallProgress = Math.round((notesProgress + catsProgress) / 2)
-    const isEligible = overallProgress >= 80
+    const isEligible = true // temporary: remove this line and uncomment below when done
+    // const isEligible = overallProgress >= 80
 
     return NextResponse.json({
       course: { id: course.id, title: course.title },
