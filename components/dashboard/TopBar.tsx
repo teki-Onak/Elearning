@@ -14,6 +14,39 @@ export default function TopBar({ user }: TopBarProps) {
   const [unreadCount, setUnreadCount] = useState(0)
   const [loading, setLoading] = useState(false)
   const panelRef = useRef<HTMLDivElement>(null)
+  const [searchQuery, setSearchQuery] = useState('')
+  const [searchResults, setSearchResults] = useState<any>({ courses: [], users: [], forums: [] })
+  const [searching, setSearching] = useState(false)
+  const [showResults, setShowResults] = useState(false)
+  const searchRef = useRef<HTMLDivElement>(null)
+  const searchTimeout = useRef<any>(null)
+
+  const handleSearch = (value: string) => {
+    setSearchQuery(value)
+    if (value.length < 2) { setShowResults(false); return }
+    setShowResults(true)
+    setSearching(true)
+    clearTimeout(searchTimeout.current)
+    searchTimeout.current = setTimeout(async () => {
+      const res = await fetch(`/api/search?q=${encodeURIComponent(value)}`)
+      const data = await res.json()
+      setSearchResults(data)
+      setSearching(false)
+    }, 300)
+  }
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) {
+        setNotifOpen(false)
+      }
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setShowResults(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
 
 const fetchNotifications = async () => {
   setLoading(true)
@@ -88,13 +121,84 @@ const fetchNotifications = async () => {
         <Menu className="w-5 h-5" />
       </button>
 
-      <div className="flex-1 max-w-sm hidden md:flex items-center gap-2 bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2">
-        <Search className="w-4 h-4 text-slate-400 flex-shrink-0" />
-        <input
-          type="text"
-          placeholder="Search courses..."
-          className="bg-transparent text-sm text-white placeholder-slate-400 focus:outline-none flex-1"
-        />
+      {/* Search */}
+      <div className="relative flex-1 max-w-sm hidden md:block" ref={searchRef}>
+        <div className="flex items-center gap-2 bg-slate-800/80 border border-slate-700 rounded-xl px-3 py-2">
+          <Search className="w-4 h-4 text-slate-400 flex-shrink-0" />
+          <input
+            type="text"
+            placeholder="Search courses, forum..."
+            className="bg-transparent text-sm text-white placeholder-slate-400 focus:outline-none flex-1"
+            value={searchQuery}
+            onChange={e => handleSearch(e.target.value)}
+            onFocus={() => searchQuery.length > 1 && setShowResults(true)}
+          />
+          {searchQuery && (
+            <button onClick={() => { setSearchQuery(''); setShowResults(false) }}>
+              <X className="w-4 h-4 text-slate-400" />
+            </button>
+          )}
+        </div>
+
+        {/* Search Results Dropdown */}
+        {showResults && (
+          <div className="absolute top-12 left-0 w-full bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl z-50 overflow-hidden">
+            {searching ? (
+              <div className="flex justify-center py-6">
+                <div className="w-5 h-5 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
+              </div>
+            ) : (
+              <div className="max-h-96 overflow-y-auto">
+                {searchResults.courses?.length > 0 && (
+                  <div>
+                    <p className="text-xs text-slate-500 px-4 py-2 uppercase tracking-wider">Courses</p>
+                    {searchResults.courses.map((c: any) => (
+                      <a key={c.id} href={`/courses/${c.id}`} onClick={() => setShowResults(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800 transition-colors">
+                        <span className="text-lg">📚</span>
+                        <div>
+                          <p className="text-sm text-white font-medium">{c.title}</p>
+                          <p className="text-xs text-slate-400">{c.category} · {c.level}</p>
+                        </div>
+                      </a>
+                    ))}
+                  </div>
+                )}
+                {searchResults.users?.length > 0 && (
+                  <div>
+                    <p className="text-xs text-slate-500 px-4 py-2 uppercase tracking-wider">Users</p>
+                    {searchResults.users.map((u: any) => (
+                      <div key={u.id} className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800 transition-colors">
+                        <span className="text-lg">👤</span>
+                        <div>
+                          <p className="text-sm text-white font-medium">{u.name}</p>
+                          <p className="text-xs text-slate-400">{u.email} · {u.role}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                {searchResults.forums?.length > 0 && (
+                  <div>
+                    <p className="text-xs text-slate-500 px-4 py-2 uppercase tracking-wider">Forum</p>
+                    {searchResults.forums.map((f: any) => (
+                      <a key={f.id} href={`/dashboard/forum`} onClick={() => setShowResults(false)}
+                        className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800 transition-colors">
+                        <span className="text-lg">💬</span>
+                        <p className="text-sm text-white">{f.title}</p>
+                      </a>
+                    ))}
+                  </div>
+                )}
+                {!searchResults.courses?.length && !searchResults.users?.length && !searchResults.forums?.length && (
+                  <div className="text-center py-8">
+                    <p className="text-slate-400 text-sm">No results found for "{searchQuery}"</p>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="flex-1" />
