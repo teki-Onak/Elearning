@@ -1,6 +1,6 @@
 'use client'
 
-import { Megaphone } from 'lucide-react'
+import { Megaphone, MessageCircle } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
