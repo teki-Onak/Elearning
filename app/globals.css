@@ -172,16 +172,32 @@
 }
 
 .light aside {
-  background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%) !important;
-  border-color: #334155 !important;
+  background-color: #ffffff !important;
+  border-color: #e2e8f0 !important;
 }
 
 .light aside a, .light aside span, .light aside p {
-  color: #94a3b8 !important;
+  color: #64748b !important;
 }
 
-.light aside a:hover span, .light aside a.active span {
-  color: #ffffff !important;
+.light aside a:hover span {
+  color: #1e293b !important;
+}
+
+.light aside .text-white {
+  color: #1e293b !important;
+}
+
+.light aside .text-slate-400 {
+  color: #64748b !important;
+}
+
+.light aside .bg-slate-800, .light aside .bg-slate-700 {
+  background-color: #f1f5f9 !important;
+}
+
+.light aside .border-slate-800, .light aside .border-slate-700 {
+  border-color: #e2e8f0 !important;
 }
 
 .light header {
