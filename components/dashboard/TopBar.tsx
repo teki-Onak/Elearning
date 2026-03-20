@@ -1,8 +1,9 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Bell, Search, Menu, CheckCheck, X } from 'lucide-react'
+import { Bell, Search, Menu, CheckCheck, X, Sun, Moon } from 'lucide-react'
 import { getInitials } from '@/lib/utils'
+import { useTheme } from 'next-themes'
 
 interface TopBarProps {
   user: { name: string; email: string; role: string; avatar?: string | null }
@@ -18,6 +19,7 @@ export default function TopBar({ user }: TopBarProps) {
   const [searchResults, setSearchResults] = useState<any>({ courses: [], users: [], forums: [] })
   const [searching, setSearching] = useState(false)
   const [showResults, setShowResults] = useState(false)
+  const { theme, setTheme } = useTheme()
   const searchRef = useRef<HTMLDivElement>(null)
   const searchTimeout = useRef<any>(null)
 
@@ -206,6 +208,11 @@ const fetchNotifications = async () => {
       </div>
 
       <div className="flex-1" />
+
+      {/* Theme Toggle */}
+      <button onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')} className="btn-ghost p-2" title="Toggle theme">
+        {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+      </button>
 
       {/* Notifications Bell */}
       <div className="relative" ref={panelRef}>

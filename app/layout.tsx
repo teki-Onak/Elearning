@@ -1,3 +1,4 @@
+import { ThemeProvider } from '@/components/ThemeProvider'
 import type { Metadata } from 'next'
 import { Inter, Sora, JetBrains_Mono } from 'next/font/google'
 import './globals.css'
@@ -30,9 +31,10 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${sora.variable} ${inter.variable} ${jetbrainsMono.variable}`}>
+    <html lang="en" className={`${sora.variable} ${inter.variable} ${jetbrainsMono.variable}`} suppressHydrationWarning>
       <body className="bg-surface-950 text-white font-body antialiased">
-        <Providers>
+       <ThemeProvider>
+       <Providers>
           {children}
           <Toaster
             position="top-right"
@@ -46,6 +48,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             }}
           />
         </Providers>
+        </ThemeProvider>
       </body>
     </html>
   )
