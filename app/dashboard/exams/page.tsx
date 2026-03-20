@@ -1,5 +1,5 @@
-export const dynamic = 'force-dynamic'
 'use client'
+export const dynamic = 'force-dynamic'
 
 import { useEffect, useState, useCallback } from 'react'
 import { Clock, BookOpen, CheckCircle, Loader2, X, AlertTriangle, Trophy } from 'lucide-react'
