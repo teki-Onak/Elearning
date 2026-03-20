@@ -1,5 +1,6 @@
 'use client'
 
+import { Megaphone } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
@@ -34,6 +35,7 @@ const instructorNav = [
   { href: '/dashboard/instructor/assignments', label: 'Assignments', icon: ClipboardList },
   { href: '/dashboard/instructor/exams', label: 'Exams', icon: BarChart3 },
   { href: '/dashboard/instructor/submissions', label: 'Submissions', icon: CheckCircle },
+  { href: '/dashboard/instructor/announcements', label: 'Announcements', icon: Megaphone },
   
 ]
 
@@ -45,6 +47,7 @@ const adminNav = [
   { href: '/dashboard/admin/surveys', label: 'Surveys', icon: ClipboardList },
   { href: '/dashboard/admin/analytics', label: 'Analytics', icon: BarChart3 },
   { href: '/dashboard/admin/results', label: 'Results', icon: Award },
+  { href: '/dashboard/admin/announcements', label: 'Announcements', icon: Megaphone },
   { href: '/dashboard/wellbeing', label: 'Wellbeing Data', icon: Heart },
 ]
 
