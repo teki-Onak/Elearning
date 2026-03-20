@@ -176,28 +176,48 @@
   border-color: #e2e8f0 !important;
 }
 
-.light aside a, .light aside span, .light aside p {
-  color: #64748b !important;
+.light aside * {
+  color: #475569 !important;
 }
 
-.light aside a:hover span {
+.light aside a:hover {
+  background-color: #f1f5f9 !important;
+}
+
+.light aside a:hover * {
   color: #1e293b !important;
 }
 
+/* Fix active link - remove dark background */
+.light aside .bg-slate-800,
+.light aside .bg-slate-700,
+.light aside [class*="bg-slate-8"],
+.light aside [class*="bg-slate-7"] {
+  background-color: #ede9fe !important;
+}
+
+.light aside .bg-slate-800 *,
+.light aside .bg-slate-700 * {
+  color: #6366f1 !important;
+}
+
+.light aside .text-primary-400,
+.light aside .text-primary-300 {
+  color: #6366f1 !important;
+}
+
+/* Logo and brand */
 .light aside .text-white {
   color: #1e293b !important;
 }
 
-.light aside .text-slate-400 {
-  color: #64748b !important;
-}
-
-.light aside .bg-slate-800, .light aside .bg-slate-700 {
-  background-color: #f1f5f9 !important;
-}
-
-.light aside .border-slate-800, .light aside .border-slate-700 {
+.light aside .border-slate-800,
+.light aside .border-slate-700 {
   border-color: #e2e8f0 !important;
+}
+
+.light aside .text-slate-400 {
+  color: #94a3b8 !important;
 }
 
 .light header {
