@@ -17,7 +17,6 @@ export default function ChatPage() {
   const [users, setUsers] = useState<any[]>([])
   const [searchUser, setSearchUser] = useState('')
   const [currentUserId, setCurrentUserId] = useState<string>('')
-  const [currentUserIdLoaded, setCurrentUserIdLoaded] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const channelRef = useRef<any>(null)
   const pusherRef = useRef<any>(null)
@@ -25,12 +24,8 @@ export default function ChatPage() {
   useEffect(() => {
     fetchRooms()
     fetchUsers()
-    // Get current user id
-      fetch('/api/profile').then(r => r.json()).then(data => {
-      if (data?.id) {
-        setCurrentUserId(data.id)
-        setCurrentUserIdLoaded(true)
-      }
+    fetch('/api/profile').then(r => r.json()).then(data => {
+      if (data?.id) setCurrentUserId(data.id)
     }).catch(() => {})
   }, [])
 
@@ -40,31 +35,24 @@ export default function ChatPage() {
 
   useEffect(() => {
     if (!activeRoom) return
-
     if (!pusherRef.current) {
       pusherRef.current = getPusherClient()
     }
     const pusher = pusherRef.current
     if (!pusher) return
-
-    // Unsubscribe from previous channel
     if (channelRef.current) {
       channelRef.current.unbind_all()
       pusher.unsubscribe(`chat-${activeRoom.id}`)
     }
-
     fetchMessages(activeRoom.id)
-
-    // Subscribe to new channel
     const channel = pusher.subscribe(`chat-${activeRoom.id}`)
     channel.bind('new-message', (message: any) => {
       setMessages(prev => {
-        if (prev.find(m => m.id === message.id)) return prev
+        if (prev.find((m: any) => m.id === message.id)) return prev
         return [...prev, message]
       })
     })
     channelRef.current = channel
-
     return () => {
       channel.unbind_all()
       pusher.unsubscribe(`chat-${activeRoom.id}`)
@@ -75,9 +63,8 @@ export default function ChatPage() {
     const res = await fetch('/api/chat')
     const data = await res.json()
     if (Array.isArray(data)) {
-      // Deduplicate rooms by id
       const seen = new Set()
-      const unique = data.filter(r => {
+      const unique = data.filter((r: any) => {
         if (seen.has(r.id)) return false
         seen.add(r.id)
         return true
@@ -100,7 +87,7 @@ export default function ChatPage() {
   }
 
   const startDirectChat = async (userId: string) => {
-    const existing = rooms.find(r =>
+    const existing = rooms.find((r: any) =>
       r.type === 'direct' && r.members?.some((m: any) => m.user.id === userId)
     )
     if (existing) {
@@ -117,27 +104,12 @@ export default function ChatPage() {
     const room = await res.json()
     if (!room.id) return
     setActiveRoom(room)
-    await fetchRooms() // Refresh rooms from server instead of adding manually
+    await fetchRooms()
     setShowNewChat(false)
     setSearchUser('')
   }
 
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ userId, type: 'direct' }),
-    })
-    const room = await res.json()
-    setActiveRoom(room)
-    setRooms(prev => {
-      if (prev.find(r => r.id === room.id)) return prev
-      return [room, ...prev]
-    })
-    setShowNewChat(false)
-    setSearchUser('')
-  }
-
-    const sendMessage = async () => {
+  const sendMessage = async () => {
     if (!newMessage.trim() || !activeRoom || sending) return
     const content = newMessage
     setNewMessage('')
@@ -166,11 +138,9 @@ export default function ChatPage() {
     return other?.user?.avatar || null
   }
 
-  const getRoomInitial = (room: any) => {
-    return getRoomName(room)[0]?.toUpperCase() || '?'
-  }
+  const getRoomInitial = (room: any) => getRoomName(room)[0]?.toUpperCase() || '?'
 
-  const filteredUsers = users.filter(u =>
+  const filteredUsers = users.filter((u: any) =>
     u.name.toLowerCase().includes(searchUser.toLowerCase())
   )
 
@@ -187,8 +157,6 @@ export default function ChatPage() {
               <Plus className="w-4 h-4" />
             </button>
           </div>
-
-          {/* New Chat Search */}
           {showNewChat && (
             <div className="space-y-2">
               <div className="flex items-center gap-2 bg-slate-800 rounded-xl px-3 py-2">
@@ -209,7 +177,7 @@ export default function ChatPage() {
                   {filteredUsers.length === 0 ? (
                     <p className="text-slate-400 text-sm p-3">No users found</p>
                   ) : (
-                    filteredUsers.map(u => (
+                    filteredUsers.map((u: any) => (
                       <button
                         key={u.id}
                         onClick={() => startDirectChat(u.id)}
@@ -234,8 +202,6 @@ export default function ChatPage() {
             </div>
           )}
         </div>
-
-        {/* Rooms List */}
         <div className="flex-1 overflow-y-auto">
           {loading ? (
             <div className="flex justify-center py-8">
@@ -248,13 +214,11 @@ export default function ChatPage() {
               <p className="text-slate-500 text-xs mt-1">Click + to start a conversation</p>
             </div>
           ) : (
-            rooms.map(room => (
+            rooms.map((room: any) => (
               <button
                 key={room.id}
                 onClick={() => setActiveRoom(room)}
-                className={`w-full flex items-center gap-3 p-4 hover:bg-slate-800 transition-colors border-b border-slate-800/50 ${
-                  activeRoom?.id === room.id ? 'bg-slate-800' : ''
-                }`}
+                className={`w-full flex items-center gap-3 p-4 hover:bg-slate-800 transition-colors border-b border-slate-800/50 ${activeRoom?.id === room.id ? 'bg-slate-800' : ''}`}
               >
                 {getRoomAvatar(room) ? (
                   <img src={getRoomAvatar(room)} alt="" className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
@@ -280,7 +244,6 @@ export default function ChatPage() {
       {/* Chat Area */}
       {activeRoom ? (
         <div className="flex-1 flex flex-col bg-slate-950">
-          {/* Chat Header */}
           <div className="p-4 border-b border-slate-800 flex items-center gap-3">
             {getRoomAvatar(activeRoom) ? (
               <img src={getRoomAvatar(activeRoom)} alt="" className="w-9 h-9 rounded-full object-cover" />
@@ -296,8 +259,6 @@ export default function ChatPage() {
               </p>
             </div>
           </div>
-
-          {/* Messages */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
             {messages.length === 0 ? (
               <div className="text-center py-12">
@@ -305,7 +266,7 @@ export default function ChatPage() {
                 <p className="text-slate-400 text-sm">No messages yet. Say hello! 👋</p>
               </div>
             ) : (
-              messages.map(msg => (
+              messages.map((msg: any) => (
                 <div
                   key={msg.id}
                   className={`flex items-end gap-2 ${msg.user?.id === currentUserId ? 'flex-row-reverse' : ''}`}
@@ -317,7 +278,7 @@ export default function ChatPage() {
                       {msg.user?.name?.[0]?.toUpperCase()}
                     </div>
                   )}
-                  <div className={`max-w-xs lg:max-w-md ${msg.user?.id === currentUserId ? 'items-end' : 'items-start'} flex flex-col`}>
+                  <div className={`max-w-xs lg:max-w-md flex flex-col ${msg.user?.id === currentUserId ? 'items-end' : 'items-start'}`}>
                     {msg.user?.id !== currentUserId && (
                       <p className="text-xs text-slate-400 mb-1 px-1">{msg.user?.name}</p>
                     )}
@@ -337,8 +298,6 @@ export default function ChatPage() {
             )}
             <div ref={messagesEndRef} />
           </div>
-
-          {/* Message Input */}
           <div className="p-4 border-t border-slate-800">
             <div className="flex items-center gap-3 bg-slate-800 rounded-2xl px-4 py-2">
               <input
