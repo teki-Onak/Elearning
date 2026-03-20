@@ -25,8 +25,9 @@ export default function ChatPage() {
     fetchRooms()
     fetchUsers()
     fetch('/api/profile').then(r => r.json()).then(data => {
+      console.log('Profile data:', data)
       if (data?.id) setCurrentUserId(data.id)
-    }).catch(() => {})
+    }).catch((err) => console.error('Profile error:', err))
   }, [])
 
   useEffect(() => {
