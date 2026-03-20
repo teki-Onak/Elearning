@@ -16,7 +16,8 @@ export default function ChatPage() {
   const [showNewChat, setShowNewChat] = useState(false)
   const [users, setUsers] = useState<any[]>([])
   const [searchUser, setSearchUser] = useState('')
-  const [currentUserId, setCurrentUserId] = useState('')
+  const [currentUserId, setCurrentUserId] = useState<string>('')
+  const [currentUserIdLoaded, setCurrentUserIdLoaded] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const channelRef = useRef<any>(null)
   const pusherRef = useRef<any>(null)
@@ -25,8 +26,11 @@ export default function ChatPage() {
     fetchRooms()
     fetchUsers()
     // Get current user id
-    fetch('/api/profile').then(r => r.json()).then(data => {
-      if (data?.id) setCurrentUserId(data.id)
+      fetch('/api/profile').then(r => r.json()).then(data => {
+      if (data?.id) {
+        setCurrentUserId(data.id)
+        setCurrentUserIdLoaded(true)
+      }
     }).catch(() => {})
   }, [])
 
@@ -70,7 +74,16 @@ export default function ChatPage() {
   const fetchRooms = async () => {
     const res = await fetch('/api/chat')
     const data = await res.json()
-    setRooms(Array.isArray(data) ? data : [])
+    if (Array.isArray(data)) {
+      // Deduplicate rooms by id
+      const seen = new Set()
+      const unique = data.filter(r => {
+        if (seen.has(r.id)) return false
+        seen.add(r.id)
+        return true
+      })
+      setRooms(unique)
+    }
     setLoading(false)
   }
 
@@ -87,7 +100,6 @@ export default function ChatPage() {
   }
 
   const startDirectChat = async (userId: string) => {
-    // Check if room already exists in list
     const existing = rooms.find(r =>
       r.type === 'direct' && r.members?.some((m: any) => m.user.id === userId)
     )
@@ -97,6 +109,18 @@ export default function ChatPage() {
       setSearchUser('')
       return
     }
+    const res = await fetch('/api/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userId, type: 'direct' }),
+    })
+    const room = await res.json()
+    if (!room.id) return
+    setActiveRoom(room)
+    await fetchRooms() // Refresh rooms from server instead of adding manually
+    setShowNewChat(false)
+    setSearchUser('')
+  }
 
     const res = await fetch('/api/chat', {
       method: 'POST',
@@ -113,18 +137,19 @@ export default function ChatPage() {
     setSearchUser('')
   }
 
-  const sendMessage = async () => {
-    if (!newMessage.trim() || !activeRoom) return
+    const sendMessage = async () => {
+    if (!newMessage.trim() || !activeRoom || sending) return
+    const content = newMessage
+    setNewMessage('')
     setSending(true)
     const res = await fetch('/api/chat/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ roomId: activeRoom.id, content: newMessage }),
+      body: JSON.stringify({ roomId: activeRoom.id, content }),
     })
-    if (res.ok) {
-      setNewMessage('')
-    } else {
+    if (!res.ok) {
       toast.error('Failed to send message')
+      setNewMessage(content)
     }
     setSending(false)
   }
