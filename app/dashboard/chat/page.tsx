@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic'
 
 import { useState, useEffect, useRef } from 'react'
 import { MessageCircle, Send, Search, Plus, X, Loader2, Users } from 'lucide-react'
-import { pusherClient } from '@/lib/pusher'
+import { getPusherClient } from '@/lib/pusher'
 import toast from 'react-hot-toast'
 
 export default function ChatPage() {
@@ -19,6 +19,7 @@ export default function ChatPage() {
   const [currentUserId, setCurrentUserId] = useState('')
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const channelRef = useRef<any>(null)
+  const pusherRef = useRef<any>(null)
 
   useEffect(() => {
     fetchRooms()
@@ -36,16 +37,22 @@ export default function ChatPage() {
   useEffect(() => {
     if (!activeRoom) return
 
+    if (!pusherRef.current) {
+      pusherRef.current = getPusherClient()
+    }
+    const pusher = pusherRef.current
+    if (!pusher) return
+
     // Unsubscribe from previous channel
     if (channelRef.current) {
       channelRef.current.unbind_all()
-      pusherClient.unsubscribe(`chat-${activeRoom.id}`)
+      pusher.unsubscribe(`chat-${activeRoom.id}`)
     }
 
     fetchMessages(activeRoom.id)
 
     // Subscribe to new channel
-    const channel = pusherClient.subscribe(`chat-${activeRoom.id}`)
+    const channel = pusher.subscribe(`chat-${activeRoom.id}`)
     channel.bind('new-message', (message: any) => {
       setMessages(prev => {
         if (prev.find(m => m.id === message.id)) return prev
@@ -56,7 +63,7 @@ export default function ChatPage() {
 
     return () => {
       channel.unbind_all()
-      pusherClient.unsubscribe(`chat-${activeRoom.id}`)
+      pusher.unsubscribe(`chat-${activeRoom.id}`)
     }
   }, [activeRoom])
 
@@ -80,6 +87,17 @@ export default function ChatPage() {
   }
 
   const startDirectChat = async (userId: string) => {
+    // Check if room already exists in list
+    const existing = rooms.find(r =>
+      r.type === 'direct' && r.members?.some((m: any) => m.user.id === userId)
+    )
+    if (existing) {
+      setActiveRoom(existing)
+      setShowNewChat(false)
+      setSearchUser('')
+      return
+    }
+
     const res = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
