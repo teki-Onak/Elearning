@@ -13,10 +13,18 @@ export async function GET(req: NextRequest) {
     const q = searchParams.get('q')?.trim()
     if (!q || q.length < 2) return NextResponse.json({ courses: [], users: [], forums: [] })
 
+    const isInstructor = session.user.role === 'INSTRUCTOR'
+    const isAdmin = session.user.role === 'ADMIN'
+
     const [courses, forums] = await Promise.all([
       prisma.course.findMany({
         where: {
           isPublished: true,
+          ...(isInstructor ? {
+            instructors: {
+              some: { instructorId: session.user.id }
+            }
+          } : {}),
           OR: [
             { title: { contains: q, mode: 'insensitive' } },
             { description: { contains: q, mode: 'insensitive' } },
