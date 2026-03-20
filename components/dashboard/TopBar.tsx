@@ -153,7 +153,11 @@ const fetchNotifications = async () => {
                   <div>
                     <p className="text-xs text-slate-500 px-4 py-2 uppercase tracking-wider">Courses</p>
                     {searchResults.courses.map((c: any) => (
-                      <a key={c.id} href={`/courses/${c.id}`} onClick={() => setShowResults(false)}
+                      <a key={c.id} href={
+                        user.role === 'ADMIN' ? `/dashboard/admin/courses` :
+                        user.role === 'INSTRUCTOR' ? `/dashboard/instructor/units` :
+                        `/courses/${c.id}`
+                      } onClick={() => setShowResults(false)}
                         className="flex items-center gap-3 px-4 py-2.5 hover:bg-slate-800 transition-colors">
                         <span className="text-lg">📚</span>
                         <div>
