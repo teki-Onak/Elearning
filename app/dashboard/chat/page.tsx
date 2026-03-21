@@ -110,19 +110,37 @@ export default function ChatPage() {
     setSearchUser('')
   }
 
-  const sendMessage = async () => {
+    const sendMessage = async () => {
     if (!newMessage.trim() || !activeRoom || sending) return
     const content = newMessage
     setNewMessage('')
     setSending(true)
+
+    // Optimistically add message immediately
+    const tempMessage = {
+      id: `temp-${Date.now()}`,
+      roomId: activeRoom.id,
+      content,
+      createdAt: new Date().toISOString(),
+      user: { id: currentUserId, name: 'You', avatar: null },
+    }
+    setMessages(prev => [...prev, tempMessage])
+
     const res = await fetch('/api/chat/messages', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ roomId: activeRoom.id, content }),
     })
+
     if (!res.ok) {
       toast.error('Failed to send message')
       setNewMessage(content)
+      // Remove temp message on failure
+      setMessages(prev => prev.filter(m => m.id !== tempMessage.id))
+    } else {
+      // Replace temp message with real one
+      const real = await res.json()
+      setMessages(prev => prev.map(m => m.id === tempMessage.id ? real : m))
     }
     setSending(false)
   }

@@ -51,8 +51,8 @@ export async function POST(req: NextRequest) {
       },
     })
 
-    // Trigger Pusher event with minimal data (avoid 10KB limit)
-    await pusherServer.trigger(`chat-${roomId}`, 'new-message', {
+    // Don't await Pusher - fire and forget
+    pusherServer.trigger(`chat-${roomId}`, 'new-message', {
       id: message.id,
       roomId: message.roomId,
       content: message.content,
@@ -60,9 +60,9 @@ export async function POST(req: NextRequest) {
       user: {
         id: message.user.id,
         name: message.user.name,
-        avatar: null, // Don't send avatar through Pusher - too large
+        avatar: null,
       },
-    })
+    }).catch(err => console.error('Pusher error:', err))
 
     return NextResponse.json(message, { status: 201 })
   } catch (err) {
